@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.clinicms.controller.AppointmentController"
+      spacing="16" styleClass="view-root">
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Ραντεβου" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Φιλτρο:" styleClass="form-label"/>
+        <ComboBox fx:id="cbStatusFilter" prefWidth="160"/>
+    </HBox>
+
+    <TableView fx:id="apptTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"      text="ΑΑ"          prefWidth="50"/>
+            <TableColumn fx:id="colPatient" text="Ασθενης"     prefWidth="160"/>
+            <TableColumn fx:id="colDoctor"  text="Ιατρος"      prefWidth="160"/>
+            <TableColumn fx:id="colDate"    text="Ημερομηνια"  prefWidth="110"/>
+            <TableColumn fx:id="colTime"    text="Ωρα"         prefWidth="70"/>
+            <TableColumn fx:id="colReason"  text="Αιτια"       prefWidth="180"/>
+            <TableColumn fx:id="colStatus"  text="Κατασταση"   prefWidth="120"/>
+        </columns>
+        <placeholder><Label text="Δεν βρεθηκαν ραντεβου. Προγραμματιστε ενα παρακατω."/></placeholder>
+    </TableView>
+
+    <TitledPane text="Στοιχεια Ραντεβου" expanded="true" styleClass="form-pane" collapsible="false">
+        <GridPane hgap="12" vgap="10">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+
+            <Label text="Ασθενης *"     GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
+            <ComboBox fx:id="cbPatient" prefWidth="210"
+                      GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Ιατρος *"      GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="form-label"/>
+            <ComboBox fx:id="cbDoctor"  prefWidth="210"
+                      GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+            <Label text="Ημερομηνια *"  GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
+            <TextField fx:id="tfDate" promptText="ηη/ΜΜ/εεεε"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="130"/>
+
+            <Label text="Ωρα *"         GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="form-label"/>
+            <ComboBox fx:id="cbTimeSlot" prefWidth="110"
+                      GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+            <Label text="Αιτια *"       GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
+            <TextField fx:id="tfReason" promptText="Αιτια επισκεψης / κυριο παραπον"
+                       GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="3" prefWidth="460"/>
+
+            <Label text="Σημειωσεις"    GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="form-label"/>
+            <TextArea fx:id="taNotes" promptText="Επιπλεον κλινικες σημειωσεις..."
+                      prefRowCount="2"
+                      GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"/>
+
+            <HBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="4">
+                <Button fx:id="btnSchedule" text="Προγραμματισμος Ραντεβου" onAction="#onSchedule" styleClass="btn-primary"/>
+                <Button fx:id="btnComplete" text="Ολοκληρωση"               onAction="#onComplete" styleClass="btn-success"/>
+                <Button fx:id="btnCancel"   text="Ακυρωση Ραντεβου"         onAction="#onCancel"   styleClass="btn-danger"/>
+                <Button fx:id="btnClear"    text="Καθαρισμος"               onAction="#onClear"    styleClass="btn-secondary"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblStatus" styleClass="status-label"/>
+            </HBox>
+        </GridPane>
+    </TitledPane>
+</VBox>

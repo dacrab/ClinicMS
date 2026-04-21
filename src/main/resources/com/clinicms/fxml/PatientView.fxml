@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.clinicms.controller.PatientController"
+      spacing="16" styleClass="view-root">
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Ασθενεις" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="tfSearch" promptText="Αναζητηση με ονομα η τηλεφωνο..."
+                   styleClass="search-field" prefWidth="280"/>
+    </HBox>
+
+    <TableView fx:id="patientTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"     text="ΑΑ"           prefWidth="50"/>
+            <TableColumn fx:id="colName"   text="Ονομα"        prefWidth="180"/>
+            <TableColumn fx:id="colDob"    text="Ημ. Γεννησης" prefWidth="110"/>
+            <TableColumn fx:id="colGender" text="Φυλο"         prefWidth="80"/>
+            <TableColumn fx:id="colPhone"  text="Τηλεφωνο"     prefWidth="130"/>
+            <TableColumn fx:id="colEmail"  text="Email"         prefWidth="180"/>
+        </columns>
+        <placeholder><Label text="Δεν βρεθηκαν ασθενεις. Εγγραψτε εναν παρακατω."/></placeholder>
+    </TableView>
+
+    <TitledPane text="Στοιχεια Ασθενη" expanded="true" styleClass="form-pane" collapsible="false">
+        <GridPane hgap="12" vgap="10">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+
+            <Label text="Ονομα *"          GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
+            <TextField fx:id="tfName" promptText="Πληρες ονομα"
+                       GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200"/>
+
+            <Label text="Ημ. Γεννησης *"   GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="form-label"/>
+            <TextField fx:id="tfDob" promptText="ηη/ΜΜ/εεεε"
+                       GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="120"/>
+
+            <Label text="Φυλο *"           GridPane.columnIndex="4" GridPane.rowIndex="0" styleClass="form-label"/>
+            <ComboBox fx:id="cbGender" prefWidth="120"
+                      GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+
+            <Label text="Τηλεφωνο"        GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
+            <TextField fx:id="tfPhone" promptText="+30 210 0000000"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+            <Label text="Email"            GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="form-label"/>
+            <TextField fx:id="tfEmail" promptText="asthenis@email.com"
+                       GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.columnSpan="3"/>
+
+            <Label text="Ιατρικο Ιστορικο" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
+            <TextArea fx:id="taMedicalHistory" promptText="Αλλεργιες, χρονιες παθησεις, σημειωσεις..."
+                      prefRowCount="3"
+                      GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="5"/>
+
+            <HBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="6">
+                <Button fx:id="btnSave"   text="Εγγραφη Ασθενη" onAction="#onSave"   styleClass="btn-primary"/>
+                <Button fx:id="btnDelete" text="Διαγραφη"        onAction="#onDelete" styleClass="btn-danger"/>
+                <Button                   text="Καθαρισμος"      onAction="#onClear"  styleClass="btn-secondary"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblStatus" styleClass="status-label"/>
+            </HBox>
+        </GridPane>
+    </TitledPane>
+</VBox>

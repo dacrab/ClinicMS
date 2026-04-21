@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.clinicms.controller.DashboardController"
+      spacing="20" styleClass="view-root">
+
+    <Label text="Πινακας Ελεγχου" styleClass="section-title"/>
+
+    <HBox spacing="16">
+        <VBox styleClass="dash-card" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Ιατροι" styleClass="dash-card-label"/>
+            <Label fx:id="lblTotalDoctors" text="0" styleClass="dash-card-value"/>
+        </VBox>
+        <VBox styleClass="dash-card" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Ασθενεις" styleClass="dash-card-label"/>
+            <Label fx:id="lblTotalPatients" text="0" styleClass="dash-card-value"/>
+        </VBox>
+        <VBox styleClass="dash-card" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Συνολικα Ραντεβου" styleClass="dash-card-label"/>
+            <Label fx:id="lblTotalAppointments" text="0" styleClass="dash-card-value"/>
+        </VBox>
+        <VBox styleClass="dash-card dash-card-blue" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Προγραμματισμενα" styleClass="dash-card-label"/>
+            <Label fx:id="lblScheduled" text="0" styleClass="dash-card-value"/>
+        </VBox>
+        <VBox styleClass="dash-card dash-card-green" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Ολοκληρωμενα" styleClass="dash-card-label"/>
+            <Label fx:id="lblCompleted" text="0" styleClass="dash-card-value"/>
+        </VBox>
+        <VBox styleClass="dash-card dash-card-grey" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER" spacing="6">
+            <Label text="Ακυρωμενα" styleClass="dash-card-label"/>
+            <Label fx:id="lblCancelled" text="0" styleClass="dash-card-value"/>
+        </VBox>
+    </HBox>
+
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <VBox styleClass="dash-panel" HBox.hgrow="ALWAYS" spacing="8">
+            <Label text="Κορυφαιοι Ιατροι ανα Ραντεβου" styleClass="dash-panel-title"/>
+            <Separator/>
+            <VBox fx:id="vboxTopDoctors" spacing="4"/>
+        </VBox>
+        <VBox styleClass="dash-panel" HBox.hgrow="ALWAYS" spacing="8">
+            <Label text="Προσφατα Προγραμματισμενα Ραντεβου" styleClass="dash-panel-title"/>
+            <Separator/>
+            <VBox fx:id="vboxRecentAppointments" spacing="4"/>
+        </VBox>
+    </HBox>
+</VBox>

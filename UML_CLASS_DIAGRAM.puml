@@ -1,0 +1,272 @@
+@startuml ClinicMS_Class_Diagram
+
+' Model Classes
+class Doctor {
+  - id: String
+  - name: String
+  - specialty: String
+  - phone: String
+  - email: String
+  + Doctor(id, name, specialty, phone, email)
+  + getId(): String
+  + getName(): String
+  + getSpecialty(): String
+  + getPhone(): String
+  + getEmail(): String
+  + setName(name): void
+  + setSpecialty(specialty): void
+  + setPhone(phone): void
+  + setEmail(email): void
+  + toCSV(): String
+  + fromCSV(line): Doctor
+}
+
+class Specialist {
+  - certificationYear: int
+  + Specialist(id, name, specialty, phone, email, certificationYear)
+  + getCertificationYear(): int
+  + setCertificationYear(year): void
+  + toCSV(): String
+  + fromCSV(line): Specialist
+}
+
+class Patient {
+  - id: String
+  - name: String
+  - dateOfBirth: String
+  - gender: String
+  - phone: String
+  - email: String
+  - medicalHistory: String
+  + Patient(id, name, dateOfBirth, gender, phone, email, medicalHistory)
+  + getId(): String
+  + getName(): String
+  + getDateOfBirth(): String
+  + getGender(): String
+  + getPhone(): String
+  + getEmail(): String
+  + getMedicalHistory(): String
+  + setName(name): void
+  + setDateOfBirth(dob): void
+  + setGender(gender): void
+  + setPhone(phone): void
+  + setEmail(email): void
+  + setMedicalHistory(history): void
+  + toCSV(): String
+  + fromCSV(line): Patient
+}
+
+class Appointment {
+  - id: String
+  - patientId: String
+  - doctorId: String
+  - date: String
+  - timeSlot: String
+  - reason: String
+  - status: Status
+  - notes: String
+  + Appointment(id, patientId, doctorId, date, timeSlot, reason, status, notes)
+  + getId(): String
+  + getPatientId(): String
+  + getDoctorId(): String
+  + getDate(): String
+  + getTimeSlot(): String
+  + getReason(): String
+  + getStatus(): Status
+  + getNotes(): String
+  + setDate(date): void
+  + setTimeSlot(timeSlot): void
+  + setReason(reason): void
+  + setStatus(status): void
+  + setNotes(notes): void
+  + toCSV(): String
+  + fromCSV(line): Appointment
+}
+
+enum Status {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+' Service Layer
+class DataStore <<Singleton>> {
+  - {static} instance: DataStore
+  - doctors: List<Doctor>
+  - patients: List<Patient>
+  - appointments: List<Appointment>
+  - DATA_DIR: String
+  - {static} getInstance(): DataStore
+  - DataStore()
+  + getDoctors(): List<Doctor>
+  + getPatients(): List<Patient>
+  + getAppointments(): List<Appointment>
+  + addDoctor(doctor): void
+  + updateDoctor(doctor): void
+  + deleteDoctor(id): boolean
+  + addPatient(patient): void
+  + updatePatient(patient): void
+  + deletePatient(id): boolean
+  + addAppointment(appointment): void
+  + updateAppointment(appointment): void
+  + deleteAppointment(id): void
+  + hasConflict(doctorId, date, timeSlot): boolean
+  + hasActiveAppointments(doctorId, patientId): boolean
+  - loadDoctors(): void
+  - loadPatients(): void
+  - loadAppointments(): void
+  - saveDoctors(): void
+  - savePatients(): void
+  - saveAppointments(): void
+}
+
+' Utility Classes
+class IdGenerator {
+  - {static} doctorCounter: AtomicInteger
+  - {static} patientCounter: AtomicInteger
+  - {static} appointmentCounter: AtomicInteger
+  + {static} generateDoctorId(): String
+  + {static} generatePatientId(): String
+  + {static} generateAppointmentId(): String
+}
+
+class Validator {
+  + {static} isValidDate(date): boolean
+  + {static} isValidTime(time): boolean
+  + {static} isValidEmail(email): boolean
+  + {static} isValidPhone(phone): boolean
+  + {static} isNotEmpty(text): boolean
+}
+
+' Controllers
+class MainController {
+  - contentArea: StackPane
+  + initialize(): void
+  + showDashboard(): void
+  + showDoctors(): void
+  + showPatients(): void
+  + showAppointments(): void
+  + showReports(): void
+  - loadView(fxmlFile): void
+}
+
+class DashboardController {
+  - totalDoctorsLabel: Label
+  - totalPatientsLabel: Label
+  - totalAppointmentsLabel: Label
+  - scheduledCountLabel: Label
+  - completedCountLabel: Label
+  - cancelledCountLabel: Label
+  - topDoctorsTable: TableView
+  - recentAppointmentsTable: TableView
+  + initialize(): void
+  - loadStatistics(): void
+}
+
+class DoctorController {
+  - doctorTable: TableView<Doctor>
+  - nameField: TextField
+  - specialtyField: TextField
+  - phoneField: TextField
+  - emailField: TextField
+  - searchField: TextField
+  + initialize(): void
+  + handleAdd(): void
+  + handleUpdate(): void
+  + handleDelete(): void
+  + handleClear(): void
+  - loadDoctors(): void
+  - validateInput(): boolean
+}
+
+class PatientController {
+  - patientTable: TableView<Patient>
+  - nameField: TextField
+  - dobField: TextField
+  - genderCombo: ComboBox
+  - phoneField: TextField
+  - emailField: TextField
+  - historyArea: TextArea
+  - searchField: TextField
+  + initialize(): void
+  + handleAdd(): void
+  + handleUpdate(): void
+  + handleDelete(): void
+  + handleClear(): void
+  - loadPatients(): void
+  - validateInput(): boolean
+}
+
+class AppointmentController {
+  - appointmentTable: TableView<Appointment>
+  - patientCombo: ComboBox<Patient>
+  - doctorCombo: ComboBox<Doctor>
+  - datePicker: DatePicker
+  - timeField: TextField
+  - reasonField: TextField
+  - notesArea: TextArea
+  - statusFilter: ComboBox<Status>
+  + initialize(): void
+  + handleSchedule(): void
+  + handleComplete(): void
+  + handleCancel(): void
+  + handleClear(): void
+  - loadAppointments(): void
+  - validateInput(): boolean
+  - checkConflict(): boolean
+}
+
+class ReportController {
+  - reportTable: TableView<Appointment>
+  - statusFilter: ComboBox<Status>
+  - doctorFilter: ComboBox<Doctor>
+  - patientFilter: ComboBox<Patient>
+  + initialize(): void
+  + handleFilter(): void
+  + handleExport(): void
+  - loadAppointments(): void
+}
+
+' Main Application
+class MainApp {
+  + start(stage): void
+  + {static} main(args): void
+}
+
+' Relationships
+Specialist --|> Doctor : extends
+Appointment *-- Status : contains
+
+DataStore "1" o-- "*" Doctor : manages
+DataStore "1" o-- "*" Patient : manages
+DataStore "1" o-- "*" Appointment : manages
+
+DoctorController ..> DataStore : uses
+DoctorController ..> Doctor : creates/updates
+DoctorController ..> IdGenerator : uses
+DoctorController ..> Validator : uses
+
+PatientController ..> DataStore : uses
+PatientController ..> Patient : creates/updates
+PatientController ..> IdGenerator : uses
+PatientController ..> Validator : uses
+
+AppointmentController ..> DataStore : uses
+AppointmentController ..> Appointment : creates/updates
+AppointmentController ..> Doctor : references
+AppointmentController ..> Patient : references
+AppointmentController ..> IdGenerator : uses
+AppointmentController ..> Validator : uses
+
+DashboardController ..> DataStore : uses
+ReportController ..> DataStore : uses
+
+MainController ..> DashboardController : loads
+MainController ..> DoctorController : loads
+MainController ..> PatientController : loads
+MainController ..> AppointmentController : loads
+MainController ..> ReportController : loads
+
+MainApp ..> MainController : creates
+
+@enduml

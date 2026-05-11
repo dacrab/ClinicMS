@@ -20,9 +20,7 @@ import java.util.stream.Collectors;
  * Handles scheduling, updating, completing, and cancelling appointments,
  * with double-booking prevention enforced in {@link DataStore}.
  */
-public class AppointmentController {
-
-    // ── FXML fields ────────────────────────────────────────────────────────────
+public class AppointmentController extends BaseController {
 
     @FXML private TableView<Appointment>                apptTable;
     @FXML private TableColumn<Appointment, String>      colId;
@@ -46,17 +44,12 @@ public class AppointmentController {
     @FXML private Button                btnCancel;
     @FXML private Button                btnClear;
 
-    // ── State ──────────────────────────────────────────────────────────────────
-
     private final DataStore                    store     = DataStore.getInstance();
     private final ObservableList<Appointment>  tableData = FXCollections.observableArrayList();
     private Appointment selectedAppointment = null;
 
-    // ── Initialisation ─────────────────────────────────────────────────────────
-
     @FXML
     public void initialize() {
-        // Table columns
         colId.setCellValueFactory(c ->
                 new SimpleStringProperty(String.valueOf(c.getValue().getId())));
 
@@ -77,7 +70,6 @@ public class AppointmentController {
         colReason.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getReason()));
         colStatus.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getStatus().name()));
 
-        // Color-code status column
         colStatus.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -98,7 +90,6 @@ public class AppointmentController {
 
         apptTable.setItems(tableData);
 
-        // Combo boxes
         cbPatient.setItems(FXCollections.observableArrayList(store.getPatients()));
         cbDoctor.setItems(FXCollections.observableArrayList(store.getDoctors()));
 
@@ -119,9 +110,6 @@ public class AppointmentController {
         updateActionButtons(null);
     }
 
-    // ── Event handlers ─────────────────────────────────────────────────────────
-
-    /** Schedules a new appointment or updates an existing one. */
     @FXML
     private void onSchedule() {
         Patient patient  = cbPatient.getValue();
@@ -131,12 +119,11 @@ public class AppointmentController {
         String  reason   = tfReason.getText().trim();
         String  notes    = taNotes.getText().trim();
 
-        // Validation
-        if (patient == null) { showStatus("Παρακαλω επιλεξτε ασθενη.", true); return; }
-        if (doctor == null)  { showStatus("Παρακαλω επιλεξτε ιατρο.", true); return; }
-        if (!Validator.isValidDate(date)) { showStatus("Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
-        if (timeSlot == null) { showStatus("Παρακαλω επιλεξτε ωρα.", true); return; }
-        if (!Validator.notBlank(reason)) { showStatus("Η αιτια ειναι υποχρεωτικη.", true); return; }
+        if (patient == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε ασθενη.", true); return; }
+        if (doctor == null)  { showStatus(lblStatus, "Παρακαλω επιλεξτε ιατρο.", true); return; }
+        if (!Validator.isValidDate(date)) { showStatus(lblStatus, "Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
+        if (timeSlot == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε ωρα.", true); return; }
+        if (!Validator.notBlank(reason)) { showStatus(lblStatus, "Η αιτια ειναι υποχρεωτικη.", true); return; }
 
         try {
             if (selectedAppointment == null) {
@@ -146,7 +133,7 @@ public class AppointmentController {
                         date, timeSlot, reason,
                         Appointment.Status.SCHEDULED, notes);
                 store.addAppointment(a);
-                showStatus("Το ραντεβου προγραμματιστηκε επιτυχως.", false);
+                showStatus(lblStatus, "Το ραντεβου προγραμματιστηκε επιτυχως.", false);
             } else {
                 selectedAppointment.setPatientId(patient.getId());
                 selectedAppointment.setDoctorId(doctor.getId());
@@ -155,26 +142,24 @@ public class AppointmentController {
                 selectedAppointment.setReason(reason);
                 selectedAppointment.setNotes(notes);
                 store.updateAppointment(selectedAppointment);
-                showStatus("Το ραντεβου ενημερωθηκε επιτυχως.", false);
+                showStatus(lblStatus, "Το ραντεβου ενημερωθηκε επιτυχως.", false);
             }
             clearForm();
             refreshTable(cbStatusFilter.getValue());
         } catch (IllegalStateException e) {
-            showStatus(e.getMessage(), true);
+            showStatus(lblStatus, e.getMessage(), true);
         }
     }
 
-    /** Marks the selected appointment as COMPLETED. */
     @FXML
     private void onComplete() {
         if (selectedAppointment == null) return;
         store.completeAppointment(selectedAppointment.getId());
-        showStatus("Το ραντεβου ολοκληρωθηκε.", false);
+        showStatus(lblStatus, "Το ραντεβου ολοκληρωθηκε.", false);
         clearForm();
         refreshTable(cbStatusFilter.getValue());
     }
 
-    /** Cancels the selected appointment. */
     @FXML
     private void onCancel() {
         if (selectedAppointment == null) return;
@@ -185,20 +170,17 @@ public class AppointmentController {
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) {
                 store.cancelAppointment(selectedAppointment.getId());
-                showStatus("Το ραντεβου ακυρωθηκε.", false);
+                showStatus(lblStatus, "Το ραντεβου ακυρωθηκε.", false);
                 clearForm();
                 refreshTable(cbStatusFilter.getValue());
             }
         });
     }
 
-    /** Clears the form. */
     @FXML
     private void onClear() {
         clearForm();
     }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
 
     private void populateForm(Appointment a) {
         selectedAppointment = a;
@@ -249,11 +231,5 @@ public class AppointmentController {
         btnComplete.setDisable(!hasScheduled);
         btnCancel.setDisable(!hasScheduled);
         btnSchedule.setDisable(false);
-    }
-
-    private void showStatus(String msg, boolean isError) {
-        lblStatus.setText(msg);
-        lblStatus.getStyleClass().removeAll("status-ok", "status-error");
-        lblStatus.getStyleClass().add(isError ? "status-error" : "status-ok");
     }
 }

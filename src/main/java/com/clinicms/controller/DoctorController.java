@@ -17,9 +17,7 @@ import java.util.List;
  * Controller for the Doctors view (DoctorView.fxml).
  * Supports full CRUD operations on doctors with real-time search.
  */
-public class DoctorController {
-
-    // ── FXML fields ────────────────────────────────────────────────────────────
+public class DoctorController extends BaseController {
 
     @FXML private TableView<Doctor>            doctorTable;
     @FXML private TableColumn<Doctor, String>  colId;
@@ -38,17 +36,12 @@ public class DoctorController {
     @FXML private Button     btnDelete;
     @FXML private Button     btnClear;
 
-    // ── State ──────────────────────────────────────────────────────────────────
-
     private final DataStore           store    = DataStore.getInstance();
     private final ObservableList<Doctor> tableData = FXCollections.observableArrayList();
     private Doctor selectedDoctor = null;
 
-    // ── Initialisation ─────────────────────────────────────────────────────────
-
     @FXML
     public void initialize() {
-        // Wire up table columns
         colId.setCellValueFactory(c ->
                 new SimpleStringProperty(String.valueOf(c.getValue().getId())));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -59,20 +52,15 @@ public class DoctorController {
         doctorTable.setItems(tableData);
         refreshTable(store.getDoctors());
 
-        // Row selection → populate form
         doctorTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, old, selected) -> populateForm(selected));
 
-        // Live search
         tfSearch.textProperty().addListener(
                 (obs, old, val) -> refreshTable(store.searchDoctors(val)));
 
         btnDelete.setDisable(true);
     }
 
-    // ── Event handlers ─────────────────────────────────────────────────────────
-
-    /** Saves (add or update) a doctor from the form fields. */
     @FXML
     private void onSave() {
         String name      = tfName.getText().trim();
@@ -80,21 +68,20 @@ public class DoctorController {
         String phone     = tfPhone.getText().trim();
         String email     = tfEmail.getText().trim();
 
-        // Validation
         if (!Validator.notBlank(name)) {
-            showStatus("Το ονομα ειναι υποχρεωτικο.", true);
+            showStatus(lblStatus, "Το ονομα ειναι υποχρεωτικο.", true);
             return;
         }
         if (!Validator.notBlank(specialty)) {
-            showStatus("Η ειδικοτητα ειναι υποχρεωτικη.", true);
+            showStatus(lblStatus, "Η ειδικοτητα ειναι υποχρεωτικη.", true);
             return;
         }
         if (!Validator.isValidEmail(email)) {
-            showStatus("Μη εγκυρη διευθυνση email.", true);
+            showStatus(lblStatus, "Μη εγκυρη διευθυνση email.", true);
             return;
         }
         if (!Validator.isValidPhone(phone)) {
-            showStatus("Μη εγκυρος αριθμος τηλεφωνου.", true);
+            showStatus(lblStatus, "Μη εγκυρος αριθμος τηλεφωνου.", true);
             return;
         }
 
@@ -102,23 +89,22 @@ public class DoctorController {
             if (selectedDoctor == null) {
                 Doctor d = new Doctor(IdGenerator.nextDoctorId(), name, specialty, phone, email);
                 store.addDoctor(d);
-                showStatus("Ο ιατρος προστεθηκε επιτυχως.", false);
+                showStatus(lblStatus, "Ο ιατρος προστεθηκε επιτυχως.", false);
             } else {
                 selectedDoctor.setName(name);
                 selectedDoctor.setSpecialty(specialty);
                 selectedDoctor.setPhone(phone);
                 selectedDoctor.setEmail(email);
                 store.updateDoctor(selectedDoctor);
-                showStatus("Ο ιατρος ενημερωθηκε επιτυχως.", false);
+                showStatus(lblStatus, "Ο ιατρος ενημερωθηκε επιτυχως.", false);
             }
             clearForm();
             refreshTable(store.getDoctors());
         } catch (Exception e) {
-            showStatus("Σφαλμα: " + e.getMessage(), true);
+            showStatus(lblStatus, "Σφαλμα: " + e.getMessage(), true);
         }
     }
 
-    /** Deletes the currently selected doctor. */
     @FXML
     private void onDelete() {
         if (selectedDoctor == null) return;
@@ -132,21 +118,18 @@ public class DoctorController {
                     store.deleteDoctor(selectedDoctor.getId());
                     clearForm();
                     refreshTable(store.getDoctors());
-                    showStatus("Ο ιατρος διαγραφηκε.", false);
+                    showStatus(lblStatus, "Ο ιατρος διαγραφηκε.", false);
                 } catch (IllegalStateException ex) {
-                    showStatus(ex.getMessage(), true);
+                    showStatus(lblStatus, ex.getMessage(), true);
                 }
             }
         });
     }
 
-    /** Clears the form and deselects any table row. */
     @FXML
     private void onClear() {
         clearForm();
     }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
 
     private void populateForm(Doctor d) {
         selectedDoctor = d;
@@ -177,11 +160,5 @@ public class DoctorController {
 
     private void refreshTable(List<Doctor> list) {
         tableData.setAll(list);
-    }
-
-    private void showStatus(String msg, boolean isError) {
-        lblStatus.setText(msg);
-        lblStatus.getStyleClass().removeAll("status-ok", "status-error");
-        lblStatus.getStyleClass().add(isError ? "status-error" : "status-ok");
     }
 }

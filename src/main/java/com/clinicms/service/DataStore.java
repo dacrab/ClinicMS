@@ -226,23 +226,7 @@ public class DataStore {
         saveAppointments();
     }
 
-    public Optional<Appointment> findAppointmentById(int id) {
-        return appointments.stream().filter(a -> a.getId() == id).findFirst();
-    }
 
-    /** Returns all appointments for a given doctor. */
-    public List<Appointment> getAppointmentsByDoctor(int doctorId) {
-        return appointments.stream()
-                .filter(a -> a.getDoctorId() == doctorId)
-                .collect(Collectors.toList());
-    }
-
-    /** Returns all appointments for a given patient. */
-    public List<Appointment> getAppointmentsByPatient(int patientId) {
-        return appointments.stream()
-                .filter(a -> a.getPatientId() == patientId)
-                .collect(Collectors.toList());
-    }
 
     // ── Double-booking guard ───────────────────────────────────────────────────
 

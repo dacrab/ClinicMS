@@ -17,9 +17,7 @@ import java.util.List;
  * Controller for the Patients view (PatientView.fxml).
  * Supports full CRUD operations with live search.
  */
-public class PatientController {
-
-    // ── FXML fields ────────────────────────────────────────────────────────────
+public class PatientController extends BaseController {
 
     @FXML private TableView<Patient>            patientTable;
     @FXML private TableColumn<Patient, String>  colId;
@@ -40,13 +38,9 @@ public class PatientController {
     @FXML private Button     btnSave;
     @FXML private Button     btnDelete;
 
-    // ── State ──────────────────────────────────────────────────────────────────
-
     private final DataStore              store     = DataStore.getInstance();
     private final ObservableList<Patient> tableData = FXCollections.observableArrayList();
     private Patient selectedPatient = null;
-
-    // ── Initialisation ─────────────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
@@ -72,8 +66,6 @@ public class PatientController {
         btnDelete.setDisable(true);
     }
 
-    // ── Event handlers ─────────────────────────────────────────────────────────
-
     @FXML
     private void onSave() {
         String name    = tfName.getText().trim();
@@ -83,17 +75,17 @@ public class PatientController {
         String email   = tfEmail.getText().trim();
         String history = taMedicalHistory.getText().trim();
 
-        if (!Validator.notBlank(name)) { showStatus("Το ονομα ειναι υποχρεωτικο.", true); return; }
-        if (!Validator.isValidDate(dob)) { showStatus("Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
-        if (gender == null) { showStatus("Παρακαλω επιλεξτε φυλο.", true); return; }
-        if (!Validator.isValidEmail(email)) { showStatus("Μη εγκυρη διευθυνση email.", true); return; }
-        if (!Validator.isValidPhone(phone)) { showStatus("Μη εγκυρος αριθμος τηλεφωνου.", true); return; }
+        if (!Validator.notBlank(name)) { showStatus(lblStatus, "Το ονομα ειναι υποχρεωτικο.", true); return; }
+        if (!Validator.isValidDate(dob)) { showStatus(lblStatus, "Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
+        if (gender == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε φυλο.", true); return; }
+        if (!Validator.isValidEmail(email)) { showStatus(lblStatus, "Μη εγκυρη διευθυνση email.", true); return; }
+        if (!Validator.isValidPhone(phone)) { showStatus(lblStatus, "Μη εγκυρος αριθμος τηλεφωνου.", true); return; }
 
         try {
             if (selectedPatient == null) {
                 Patient p = new Patient(IdGenerator.nextPatientId(), name, dob, gender, phone, email, history);
                 store.addPatient(p);
-                showStatus("Ο ασθενης εγγραφηκε επιτυχως.", false);
+                showStatus(lblStatus, "Ο ασθενης εγγραφηκε επιτυχως.", false);
             } else {
                 selectedPatient.setName(name);
                 selectedPatient.setDateOfBirth(dob);
@@ -102,12 +94,12 @@ public class PatientController {
                 selectedPatient.setEmail(email);
                 selectedPatient.setMedicalHistory(history);
                 store.updatePatient(selectedPatient);
-                showStatus("Ο ασθενης ενημερωθηκε επιτυχως.", false);
+                showStatus(lblStatus, "Ο ασθενης ενημερωθηκε επιτυχως.", false);
             }
             clearForm();
             refreshTable(store.getPatients());
         } catch (Exception e) {
-            showStatus("Σφαλμα: " + e.getMessage(), true);
+            showStatus(lblStatus, "Σφαλμα: " + e.getMessage(), true);
         }
     }
 
@@ -124,9 +116,9 @@ public class PatientController {
                     store.deletePatient(selectedPatient.getId());
                     clearForm();
                     refreshTable(store.getPatients());
-                    showStatus("Ο ασθενης διαγραφηκε.", false);
+                    showStatus(lblStatus, "Ο ασθενης διαγραφηκε.", false);
                 } catch (IllegalStateException ex) {
-                    showStatus(ex.getMessage(), true);
+                    showStatus(lblStatus, ex.getMessage(), true);
                 }
             }
         });
@@ -136,8 +128,6 @@ public class PatientController {
     private void onClear() {
         clearForm();
     }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
 
     private void populateForm(Patient p) {
         selectedPatient = p;
@@ -166,11 +156,5 @@ public class PatientController {
 
     private void refreshTable(List<Patient> list) {
         tableData.setAll(list);
-    }
-
-    private void showStatus(String msg, boolean isError) {
-        lblStatus.setText(msg);
-        lblStatus.getStyleClass().removeAll("status-ok", "status-error");
-        lblStatus.getStyleClass().add(isError ? "status-error" : "status-ok");
     }
 }

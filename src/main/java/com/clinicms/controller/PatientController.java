@@ -11,41 +11,23 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.List;
+public class PatientController {
 
-/**
- * Controller for the Patients view (PatientView.fxml).
- * Supports full CRUD operations with live search.
- */
-public class PatientController extends BaseController {
-
-    @FXML private TableView<Patient>            patientTable;
-    @FXML private TableColumn<Patient, String>  colId;
-    @FXML private TableColumn<Patient, String>  colName;
-    @FXML private TableColumn<Patient, String>  colDob;
-    @FXML private TableColumn<Patient, String>  colGender;
-    @FXML private TableColumn<Patient, String>  colPhone;
-    @FXML private TableColumn<Patient, String>  colEmail;
-
-    @FXML private TextField  tfSearch;
-    @FXML private TextField  tfName;
-    @FXML private TextField  tfDob;
+    @FXML private TableView<Patient> patientTable;
+    @FXML private TableColumn<Patient, String> colId, colName, colDob, colGender, colPhone, colEmail;
+    @FXML private TextField tfSearch, tfName, tfDob, tfPhone, tfEmail;
     @FXML private ComboBox<String> cbGender;
-    @FXML private TextField  tfPhone;
-    @FXML private TextField  tfEmail;
-    @FXML private TextArea   taMedicalHistory;
-    @FXML private Label      lblStatus;
-    @FXML private Button     btnSave;
-    @FXML private Button     btnDelete;
+    @FXML private TextArea taMedicalHistory;
+    @FXML private Label lblStatus;
+    @FXML private Button btnSave, btnDelete;
 
-    private final DataStore              store     = DataStore.getInstance();
+    private final DataStore store = DataStore.getInstance();
     private final ObservableList<Patient> tableData = FXCollections.observableArrayList();
-    private Patient selectedPatient = null;
+    private Patient selected = null;
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(c ->
-                new SimpleStringProperty(String.valueOf(c.getValue().getId())));
+        colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getId())));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colDob.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
         colGender.setCellValueFactory(new PropertyValueFactory<>("gender"));
@@ -53,84 +35,74 @@ public class PatientController extends BaseController {
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
 
         cbGender.setItems(FXCollections.observableArrayList("Ανδρας", "Γυναικα", "Αλλο"));
-
         patientTable.setItems(tableData);
-        refreshTable(store.getPatients());
+        refreshTable();
 
-        patientTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, old, selected) -> populateForm(selected));
-
-        tfSearch.textProperty().addListener(
-                (obs, old, val) -> refreshTable(store.searchPatients(val)));
-
+        patientTable.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> populateForm(sel));
+        tfSearch.textProperty().addListener((obs, old, val) -> tableData.setAll(store.searchPatients(val)));
         btnDelete.setDisable(true);
     }
 
     @FXML
     private void onSave() {
-        String name    = tfName.getText().trim();
-        String dob     = tfDob.getText().trim();
-        String gender  = cbGender.getValue();
-        String phone   = tfPhone.getText().trim();
-        String email   = tfEmail.getText().trim();
+        String name = tfName.getText().trim();
+        String dob = tfDob.getText().trim();
+        String gender = cbGender.getValue();
+        String phone = tfPhone.getText().trim();
+        String email = tfEmail.getText().trim();
         String history = taMedicalHistory.getText().trim();
 
-        if (!Validator.notBlank(name)) { showStatus(lblStatus, "Το ονομα ειναι υποχρεωτικο.", true); return; }
-        if (!Validator.isValidDate(dob)) { showStatus(lblStatus, "Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
-        if (gender == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε φυλο.", true); return; }
-        if (!Validator.isValidEmail(email)) { showStatus(lblStatus, "Μη εγκυρη διευθυνση email.", true); return; }
-        if (!Validator.isValidPhone(phone)) { showStatus(lblStatus, "Μη εγκυρος αριθμος τηλεφωνου.", true); return; }
+        if (!Validator.notBlank(name)) { setStatus("Το ονομα ειναι υποχρεωτικο.", true); return; }
+        if (!Validator.isValidDate(dob)) { setStatus("Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
+        if (gender == null) { setStatus("Παρακαλω επιλεξτε φυλο.", true); return; }
+        if (!Validator.isValidEmail(email)) { setStatus("Μη εγκυρη διευθυνση email.", true); return; }
+        if (!Validator.isValidPhone(phone)) { setStatus("Μη εγκυρος αριθμος τηλεφωνου.", true); return; }
 
         try {
-            if (selectedPatient == null) {
-                Patient p = new Patient(IdGenerator.nextPatientId(), name, dob, gender, phone, email, history);
-                store.addPatient(p);
-                showStatus(lblStatus, "Ο ασθενης εγγραφηκε επιτυχως.", false);
+            if (selected == null) {
+                store.addPatient(new Patient(IdGenerator.nextPatientId(), name, dob, gender, phone, email, history));
+                setStatus("Ο ασθενης εγγραφηκε.", false);
             } else {
-                selectedPatient.setName(name);
-                selectedPatient.setDateOfBirth(dob);
-                selectedPatient.setGender(gender);
-                selectedPatient.setPhone(phone);
-                selectedPatient.setEmail(email);
-                selectedPatient.setMedicalHistory(history);
-                store.updatePatient(selectedPatient);
-                showStatus(lblStatus, "Ο ασθενης ενημερωθηκε επιτυχως.", false);
+                selected.setName(name);
+                selected.setDateOfBirth(dob);
+                selected.setGender(gender);
+                selected.setPhone(phone);
+                selected.setEmail(email);
+                selected.setMedicalHistory(history);
+                store.updatePatient(selected);
+                setStatus("Ο ασθενης ενημερωθηκε.", false);
             }
             clearForm();
-            refreshTable(store.getPatients());
+            refreshTable();
         } catch (Exception e) {
-            showStatus(lblStatus, "Σφαλμα: " + e.getMessage(), true);
+            setStatus(e.getMessage(), true);
         }
     }
 
     @FXML
     private void onDelete() {
-        if (selectedPatient == null) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Διαγραφη ασθενη " + selectedPatient.getName() + ";",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Επιβεβαιωση Διαγραφης");
+        if (selected == null) return;
+        var confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Διαγραφη ασθενη " + selected.getName() + ";", ButtonType.YES, ButtonType.NO);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) {
                 try {
-                    store.deletePatient(selectedPatient.getId());
+                    store.deletePatient(selected.getId());
                     clearForm();
-                    refreshTable(store.getPatients());
-                    showStatus(lblStatus, "Ο ασθενης διαγραφηκε.", false);
+                    refreshTable();
+                    setStatus("Ο ασθενης διαγραφηκε.", false);
                 } catch (IllegalStateException ex) {
-                    showStatus(lblStatus, ex.getMessage(), true);
+                    setStatus(ex.getMessage(), true);
                 }
             }
         });
     }
 
     @FXML
-    private void onClear() {
-        clearForm();
-    }
+    private void onClear() { clearForm(); }
 
     private void populateForm(Patient p) {
-        selectedPatient = p;
+        selected = p;
         if (p == null) { clearForm(); return; }
         tfName.setText(p.getName());
         tfDob.setText(p.getDateOfBirth());
@@ -144,7 +116,7 @@ public class PatientController extends BaseController {
     }
 
     private void clearForm() {
-        selectedPatient = null;
+        selected = null;
         tfName.clear(); tfDob.clear(); tfPhone.clear(); tfEmail.clear();
         cbGender.setValue(null);
         taMedicalHistory.clear();
@@ -154,7 +126,11 @@ public class PatientController extends BaseController {
         patientTable.getSelectionModel().clearSelection();
     }
 
-    private void refreshTable(List<Patient> list) {
-        tableData.setAll(list);
+    private void refreshTable() { tableData.setAll(store.getPatients()); }
+
+    private void setStatus(String msg, boolean error) {
+        lblStatus.setText(msg);
+        lblStatus.getStyleClass().removeAll("status-ok", "status-error");
+        lblStatus.getStyleClass().add(error ? "status-error" : "status-ok");
     }
 }

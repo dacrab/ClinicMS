@@ -2,12 +2,6 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
-/**
- * Represents a Patient registered in the Clinic Management System.
- *
- * <p><strong>CSV format:</strong>
- * {@code id,name,dateOfBirth,gender,phone,email,medicalHistory}
- */
 public class Patient {
 
     private int id;
@@ -31,22 +25,16 @@ public class Patient {
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
     public String getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
-
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
-
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
     public String getMedicalHistory() { return medicalHistory; }
     public void setMedicalHistory(String medicalHistory) { this.medicalHistory = medicalHistory; }
 
@@ -56,20 +44,12 @@ public class Patient {
     }
 
     public static Patient fromCsv(String line) {
-        String[] parts = line.split(",", 7);
-        return new Patient(
-                Integer.parseInt(parts[0].trim()),
-                CsvUtil.unescape(parts[1]),
-                CsvUtil.unescape(parts[2]),
-                CsvUtil.unescape(parts[3]),
-                CsvUtil.unescape(parts[4]),
-                CsvUtil.unescape(parts[5]),
-                CsvUtil.unescape(parts[6])
-        );
+        String[] p = line.split(",", 7);
+        return new Patient(Integer.parseInt(p[0].trim()),
+                CsvUtil.unescape(p[1]), CsvUtil.unescape(p[2]), CsvUtil.unescape(p[3]),
+                CsvUtil.unescape(p[4]), CsvUtil.unescape(p[5]), CsvUtil.unescape(p[6]));
     }
 
     @Override
-    public String toString() {
-        return name + " (DOB: " + dateOfBirth + ")";
-    }
+    public String toString() { return name + " (DOB: " + dateOfBirth + ")"; }
 }

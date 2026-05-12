@@ -15,56 +15,29 @@ import javafx.scene.control.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Controller for the Appointments view (AppointmentView.fxml).
- * Handles scheduling, updating, completing, and cancelling appointments,
- * with double-booking prevention enforced in {@link DataStore}.
- */
-public class AppointmentController extends BaseController {
+public class AppointmentController {
 
-    @FXML private TableView<Appointment>                apptTable;
-    @FXML private TableColumn<Appointment, String>      colId;
-    @FXML private TableColumn<Appointment, String>      colPatient;
-    @FXML private TableColumn<Appointment, String>      colDoctor;
-    @FXML private TableColumn<Appointment, String>      colDate;
-    @FXML private TableColumn<Appointment, String>      colTime;
-    @FXML private TableColumn<Appointment, String>      colReason;
-    @FXML private TableColumn<Appointment, String>      colStatus;
+    @FXML private TableView<Appointment> apptTable;
+    @FXML private TableColumn<Appointment, String> colId, colPatient, colDoctor, colDate, colTime, colReason, colStatus;
+    @FXML private ComboBox<Patient> cbPatient;
+    @FXML private ComboBox<Doctor> cbDoctor;
+    @FXML private TextField tfDate, tfReason;
+    @FXML private ComboBox<String> cbTimeSlot, cbStatusFilter;
+    @FXML private TextArea taNotes;
+    @FXML private Label lblStatus;
+    @FXML private Button btnSchedule, btnComplete, btnCancel;
 
-    @FXML private ComboBox<Patient>     cbPatient;
-    @FXML private ComboBox<Doctor>      cbDoctor;
-    @FXML private TextField             tfDate;
-    @FXML private ComboBox<String>      cbTimeSlot;
-    @FXML private TextField             tfReason;
-    @FXML private TextArea              taNotes;
-    @FXML private ComboBox<String>      cbStatusFilter;
-    @FXML private Label                 lblStatus;
-    @FXML private Button                btnSchedule;
-    @FXML private Button                btnComplete;
-    @FXML private Button                btnCancel;
-    @FXML private Button                btnClear;
-
-    private final DataStore                    store     = DataStore.getInstance();
-    private final ObservableList<Appointment>  tableData = FXCollections.observableArrayList();
-    private Appointment selectedAppointment = null;
+    private final DataStore store = DataStore.getInstance();
+    private final ObservableList<Appointment> tableData = FXCollections.observableArrayList();
+    private Appointment selected = null;
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(c ->
-                new SimpleStringProperty(String.valueOf(c.getValue().getId())));
-
-        colPatient.setCellValueFactory(c -> {
-            int pid = c.getValue().getPatientId();
-            return new SimpleStringProperty(
-                    store.findPatientById(pid).map(Patient::getName).orElse("Unknown"));
-        });
-
-        colDoctor.setCellValueFactory(c -> {
-            int did = c.getValue().getDoctorId();
-            return new SimpleStringProperty(
-                    store.findDoctorById(did).map(d -> "Dr. " + d.getName()).orElse("Unknown"));
-        });
-
+        colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getId())));
+        colPatient.setCellValueFactory(c -> new SimpleStringProperty(
+                store.findPatientById(c.getValue().getPatientId()).map(Patient::getName).orElse("?")));
+        colDoctor.setCellValueFactory(c -> new SimpleStringProperty(
+                store.findDoctorById(c.getValue().getDoctorId()).map(d -> "Dr. " + d.getName()).orElse("?")));
         colDate.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDate()));
         colTime.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTimeSlot()));
         colReason.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getReason()));
@@ -75,118 +48,103 @@ public class AppointmentController extends BaseController {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 getStyleClass().removeAll("status-scheduled", "status-completed", "status-cancelled");
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    switch (item) {
-                        case "SCHEDULED"  -> getStyleClass().add("status-scheduled");
-                        case "COMPLETED"  -> getStyleClass().add("status-completed");
-                        case "CANCELLED"  -> getStyleClass().add("status-cancelled");
-                    }
+                if (empty || item == null) { setText(null); return; }
+                setText(item);
+                switch (item) {
+                    case "SCHEDULED" -> getStyleClass().add("status-scheduled");
+                    case "COMPLETED" -> getStyleClass().add("status-completed");
+                    case "CANCELLED" -> getStyleClass().add("status-cancelled");
                 }
             }
         });
 
         apptTable.setItems(tableData);
-
         cbPatient.setItems(FXCollections.observableArrayList(store.getPatients()));
         cbDoctor.setItems(FXCollections.observableArrayList(store.getDoctors()));
 
         cbTimeSlot.setItems(FXCollections.observableArrayList(
                 "08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
                 "12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30",
-                "16:00","16:30","17:00","17:30","18:00"
-        ));
+                "16:00","16:30","17:00","17:30","18:00"));
 
         cbStatusFilter.setItems(FXCollections.observableArrayList("ΟΛΑ", "SCHEDULED", "COMPLETED", "CANCELLED"));
         cbStatusFilter.setValue("ΟΛΑ");
-        cbStatusFilter.valueProperty().addListener((obs, old, val) -> applyFilter(val));
+        cbStatusFilter.valueProperty().addListener((obs, old, val) -> refreshTable());
 
-        apptTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, old, sel) -> populateForm(sel));
-
-        refreshTable("ALL");
-        updateActionButtons(null);
+        apptTable.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> populateForm(sel));
+        refreshTable();
+        updateButtons(null);
     }
 
     @FXML
     private void onSchedule() {
-        Patient patient  = cbPatient.getValue();
-        Doctor  doctor   = cbDoctor.getValue();
-        String  date     = tfDate.getText().trim();
-        String  timeSlot = cbTimeSlot.getValue();
-        String  reason   = tfReason.getText().trim();
-        String  notes    = taNotes.getText().trim();
+        Patient patient = cbPatient.getValue();
+        Doctor doctor = cbDoctor.getValue();
+        String date = tfDate.getText().trim();
+        String timeSlot = cbTimeSlot.getValue();
+        String reason = tfReason.getText().trim();
+        String notes = taNotes.getText().trim();
 
-        if (patient == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε ασθενη.", true); return; }
-        if (doctor == null)  { showStatus(lblStatus, "Παρακαλω επιλεξτε ιατρο.", true); return; }
-        if (!Validator.isValidDate(date)) { showStatus(lblStatus, "Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
-        if (timeSlot == null) { showStatus(lblStatus, "Παρακαλω επιλεξτε ωρα.", true); return; }
-        if (!Validator.notBlank(reason)) { showStatus(lblStatus, "Η αιτια ειναι υποχρεωτικη.", true); return; }
+        if (patient == null) { setStatus("Παρακαλω επιλεξτε ασθενη.", true); return; }
+        if (doctor == null) { setStatus("Παρακαλω επιλεξτε ιατρο.", true); return; }
+        if (!Validator.isValidDate(date)) { setStatus("Η ημερομηνια πρεπει να ειναι ηη/ΜΜ/εεεε.", true); return; }
+        if (timeSlot == null) { setStatus("Παρακαλω επιλεξτε ωρα.", true); return; }
+        if (!Validator.notBlank(reason)) { setStatus("Η αιτια ειναι υποχρεωτικη.", true); return; }
 
         try {
-            if (selectedAppointment == null) {
-                Appointment a = new Appointment(
-                        IdGenerator.nextAppointmentId(),
-                        patient.getId(), doctor.getId(),
-                        date, timeSlot, reason,
-                        Appointment.Status.SCHEDULED, notes);
-                store.addAppointment(a);
-                showStatus(lblStatus, "Το ραντεβου προγραμματιστηκε επιτυχως.", false);
+            if (selected == null) {
+                store.addAppointment(new Appointment(
+                        IdGenerator.nextAppointmentId(), patient.getId(), doctor.getId(),
+                        date, timeSlot, reason, Appointment.Status.SCHEDULED, notes));
+                setStatus("Το ραντεβου προγραμματιστηκε.", false);
             } else {
-                selectedAppointment.setPatientId(patient.getId());
-                selectedAppointment.setDoctorId(doctor.getId());
-                selectedAppointment.setDate(date);
-                selectedAppointment.setTimeSlot(timeSlot);
-                selectedAppointment.setReason(reason);
-                selectedAppointment.setNotes(notes);
-                store.updateAppointment(selectedAppointment);
-                showStatus(lblStatus, "Το ραντεβου ενημερωθηκε επιτυχως.", false);
+                selected.setPatientId(patient.getId());
+                selected.setDoctorId(doctor.getId());
+                selected.setDate(date);
+                selected.setTimeSlot(timeSlot);
+                selected.setReason(reason);
+                selected.setNotes(notes);
+                store.updateAppointment(selected);
+                setStatus("Το ραντεβου ενημερωθηκε.", false);
             }
             clearForm();
-            refreshTable(cbStatusFilter.getValue());
+            refreshTable();
         } catch (IllegalStateException e) {
-            showStatus(lblStatus, e.getMessage(), true);
+            setStatus(e.getMessage(), true);
         }
     }
 
     @FXML
     private void onComplete() {
-        if (selectedAppointment == null) return;
-        store.completeAppointment(selectedAppointment.getId());
-        showStatus(lblStatus, "Το ραντεβου ολοκληρωθηκε.", false);
+        if (selected == null) return;
+        store.completeAppointment(selected.getId());
+        setStatus("Το ραντεβου ολοκληρωθηκε.", false);
         clearForm();
-        refreshTable(cbStatusFilter.getValue());
+        refreshTable();
     }
 
     @FXML
     private void onCancel() {
-        if (selectedAppointment == null) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Ακυρωση ραντεβου #" + selectedAppointment.getId() + ";",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Επιβεβαιωση Ακυρωσης");
+        if (selected == null) return;
+        var confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Ακυρωση ραντεβου #" + selected.getId() + ";", ButtonType.YES, ButtonType.NO);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) {
-                store.cancelAppointment(selectedAppointment.getId());
-                showStatus(lblStatus, "Το ραντεβου ακυρωθηκε.", false);
+                store.cancelAppointment(selected.getId());
+                setStatus("Το ραντεβου ακυρωθηκε.", false);
                 clearForm();
-                refreshTable(cbStatusFilter.getValue());
+                refreshTable();
             }
         });
     }
 
     @FXML
-    private void onClear() {
-        clearForm();
-    }
+    private void onClear() { clearForm(); }
 
     private void populateForm(Appointment a) {
-        selectedAppointment = a;
-        updateActionButtons(a);
+        selected = a;
+        updateButtons(a);
         if (a == null) { clearForm(); return; }
-
         store.findPatientById(a.getPatientId()).ifPresent(cbPatient::setValue);
         store.findDoctorById(a.getDoctorId()).ifPresent(cbDoctor::setValue);
         tfDate.setText(a.getDate());
@@ -198,24 +156,18 @@ public class AppointmentController extends BaseController {
     }
 
     private void clearForm() {
-        selectedAppointment = null;
-        cbPatient.setValue(null);
-        cbDoctor.setValue(null);
-        tfDate.clear();
-        cbTimeSlot.setValue(null);
-        tfReason.clear();
-        taNotes.clear();
+        selected = null;
+        cbPatient.setValue(null); cbDoctor.setValue(null);
+        tfDate.clear(); cbTimeSlot.setValue(null);
+        tfReason.clear(); taNotes.clear();
         btnSchedule.setText("Προγραμματισμος Ραντεβου");
         lblStatus.setText("");
         apptTable.getSelectionModel().clearSelection();
-        updateActionButtons(null);
+        updateButtons(null);
     }
 
-    private void applyFilter(String filter) {
-        refreshTable(filter);
-    }
-
-    private void refreshTable(String filter) {
+    private void refreshTable() {
+        String filter = cbStatusFilter.getValue();
         List<Appointment> all = store.getAppointments();
         if (!"ΟΛΑ".equals(filter) && filter != null) {
             try {
@@ -226,10 +178,15 @@ public class AppointmentController extends BaseController {
         tableData.setAll(all);
     }
 
-    private void updateActionButtons(Appointment a) {
-        boolean hasScheduled = a != null && a.getStatus() == Appointment.Status.SCHEDULED;
-        btnComplete.setDisable(!hasScheduled);
-        btnCancel.setDisable(!hasScheduled);
-        btnSchedule.setDisable(false);
+    private void updateButtons(Appointment a) {
+        boolean canAct = a != null && a.getStatus() == Appointment.Status.SCHEDULED;
+        btnComplete.setDisable(!canAct);
+        btnCancel.setDisable(!canAct);
+    }
+
+    private void setStatus(String msg, boolean error) {
+        lblStatus.setText(msg);
+        lblStatus.getStyleClass().removeAll("status-ok", "status-error");
+        lblStatus.getStyleClass().add(error ? "status-error" : "status-ok");
     }
 }

@@ -23,11 +23,9 @@
         <VBox styleClass="sidebar" spacing="6" minWidth="200">
             <padding><Insets top="24" right="12" bottom="24" left="12"/></padding>
             <Label text="ΠΛΟΗΓΗΣΗ" styleClass="nav-section-label"/>
-            <Button text="Πινακας Ελεγχου"   onAction="#showDashboard"    styleClass="nav-btn" maxWidth="Infinity"/>
-            <Button text="Ιατροι"              onAction="#showDoctors"      styleClass="nav-btn" maxWidth="Infinity"/>
-            <Button text="Ασθενεις"            onAction="#showPatients"     styleClass="nav-btn" maxWidth="Infinity"/>
-            <Button text="Ραντεβου"            onAction="#showAppointments" styleClass="nav-btn" maxWidth="Infinity"/>
-            <Button text="Αναφορες"            onAction="#showReports"      styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button text="Ιατροι"   onAction="#showDoctors"      styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button text="Ασθενεις" onAction="#showPatients"     styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button text="Ραντεβου" onAction="#showAppointments" styleClass="nav-btn" maxWidth="Infinity"/>
         </VBox>
     </left>
 

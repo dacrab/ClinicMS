@@ -2,21 +2,9 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
-/**
- * Represents an Appointment in the Clinic Management System.
- *
- * <p>An Appointment links a {@link Patient} to a {@link Doctor} at a specific
- * date and 30-minute time slot.  Each appointment has a lifecycle status:
- * {@code SCHEDULED → COMPLETED} or {@code SCHEDULED → CANCELLED}.
- *
- * <p><strong>CSV format:</strong>
- * {@code id,patientId,doctorId,date,timeSlot,reason,status,notes}
- */
 public class Appointment {
 
-    public enum Status {
-        SCHEDULED, COMPLETED, CANCELLED
-    }
+    public enum Status { SCHEDULED, COMPLETED, CANCELLED }
 
     private int id;
     private int patientId;
@@ -41,31 +29,22 @@ public class Appointment {
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
-
     public int getPatientId() { return patientId; }
     public void setPatientId(int patientId) { this.patientId = patientId; }
-
     public int getDoctorId() { return doctorId; }
     public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
-
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
-
     public String getTimeSlot() { return timeSlot; }
     public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }
-
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
-
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
-
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    /**
-     * Checks whether this appointment conflicts (same doctor, same date + time) with another.
-     */
+    // Checks double-booking: same doctor, date, time, both non-cancelled
     public boolean conflictsWith(Appointment other) {
         return this.doctorId == other.doctorId
                 && this.date.equals(other.date)
@@ -80,21 +59,12 @@ public class Appointment {
     }
 
     public static Appointment fromCsv(String line) {
-        String[] parts = line.split(",", 8);
-        return new Appointment(
-                Integer.parseInt(parts[0].trim()),
-                Integer.parseInt(parts[1].trim()),
-                Integer.parseInt(parts[2].trim()),
-                CsvUtil.unescape(parts[3]),
-                CsvUtil.unescape(parts[4]),
-                CsvUtil.unescape(parts[5]),
-                Status.valueOf(parts[6].trim()),
-                CsvUtil.unescape(parts[7])
-        );
+        String[] p = line.split(",", 8);
+        return new Appointment(Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim()),
+                Integer.parseInt(p[2].trim()), CsvUtil.unescape(p[3]), CsvUtil.unescape(p[4]),
+                CsvUtil.unescape(p[5]), Status.valueOf(p[6].trim()), CsvUtil.unescape(p[7]));
     }
 
     @Override
-    public String toString() {
-        return "Appointment #" + id + " [" + date + " " + timeSlot + "] – " + status;
-    }
+    public String toString() { return "Appointment #" + id + " [" + date + " " + timeSlot + "] " + status; }
 }

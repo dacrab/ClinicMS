@@ -2,6 +2,7 @@ package com.clinicms.util;
 
 import java.util.regex.Pattern;
 
+/** Βοηθητικες μεθοδοι επικυρωσης εισοδου (ημερομηνια, email, τηλεφωνο). */
 public final class Validator {
 
     private static final Pattern DATE_PAT = Pattern.compile("^\\d{2}/\\d{2}/\\d{4}$");

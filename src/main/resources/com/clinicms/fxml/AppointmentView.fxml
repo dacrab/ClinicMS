@@ -12,8 +12,11 @@
     <HBox alignment="CENTER_LEFT" spacing="12">
         <Label text="Ραντεβου" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Label text="Φιλτρο:" styleClass="form-label"/>
-        <ComboBox fx:id="cbStatusFilter" prefWidth="160"/>
+        <Button fx:id="btnToday" text="Σημερινα" onAction="#onFilterToday" styleClass="btn-primary"/>
+        <Label text="Ημ/νια:" styleClass="form-label"/>
+        <TextField fx:id="tfDateFilter" promptText="ηη/ΜΜ/εεεε" prefWidth="110"/>
+        <Label text="Κατασταση:" styleClass="form-label"/>
+        <ComboBox fx:id="cbStatusFilter" prefWidth="140"/>
     </HBox>
 
     <TableView fx:id="apptTable" VBox.vgrow="ALWAYS" styleClass="data-table">

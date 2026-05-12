@@ -12,16 +12,23 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller για τη διαχειριση ραντεβου.
+ * Υποστηριζει προγραμματισμο, ενημερωση, ολοκληρωση, ακυρωση
+ * και φιλτραρισμα κατα ημερομηνια/κατασταση.
+ */
 public class AppointmentController {
 
     @FXML private TableView<Appointment> apptTable;
     @FXML private TableColumn<Appointment, String> colId, colPatient, colDoctor, colDate, colTime, colReason, colStatus;
     @FXML private ComboBox<Patient> cbPatient;
     @FXML private ComboBox<Doctor> cbDoctor;
-    @FXML private TextField tfDate, tfReason;
+    @FXML private TextField tfDate, tfReason, tfDateFilter;
     @FXML private ComboBox<String> cbTimeSlot, cbStatusFilter;
     @FXML private TextArea taNotes;
     @FXML private Label lblStatus;
@@ -31,6 +38,7 @@ public class AppointmentController {
     private final ObservableList<Appointment> tableData = FXCollections.observableArrayList();
     private Appointment selected = null;
 
+    /** Αρχικοποιηση πινακα, φιλτρων και listeners. */
     @FXML
     public void initialize() {
         colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getId())));
@@ -70,12 +78,21 @@ public class AppointmentController {
         cbStatusFilter.setItems(FXCollections.observableArrayList("ΟΛΑ", "SCHEDULED", "COMPLETED", "CANCELLED"));
         cbStatusFilter.setValue("ΟΛΑ");
         cbStatusFilter.valueProperty().addListener((obs, old, val) -> refreshTable());
+        tfDateFilter.textProperty().addListener((obs, old, val) -> refreshTable());
 
         apptTable.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> populateForm(sel));
         refreshTable();
         updateButtons(null);
     }
 
+    /** Φιλτραρει τον πινακα ωστε να δειχνει μονο τα σημερινα ραντεβου. */
+    @FXML
+    private void onFilterToday() {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        tfDateFilter.setText(today);
+    }
+
+    /** Προγραμματιζει νεο ραντεβου η ενημερωνει υπαρχον. */
     @FXML
     private void onSchedule() {
         Patient patient = cbPatient.getValue();
@@ -114,6 +131,7 @@ public class AppointmentController {
         }
     }
 
+    /** Σημειωνει το επιλεγμενο ραντεβου ως ολοκληρωμενο. */
     @FXML
     private void onComplete() {
         if (selected == null) return;
@@ -123,6 +141,7 @@ public class AppointmentController {
         refreshTable();
     }
 
+    /** Ακυρωνει το επιλεγμενο ραντεβου μετα απο επιβεβαιωση. */
     @FXML
     private void onCancel() {
         if (selected == null) return;
@@ -166,16 +185,26 @@ public class AppointmentController {
         updateButtons(null);
     }
 
+    /** Εφαρμοζει φιλτρα κατασταση + ημερομηνιας στον πινακα. */
     private void refreshTable() {
-        String filter = cbStatusFilter.getValue();
-        List<Appointment> all = store.getAppointments();
-        if (!"ΟΛΑ".equals(filter) && filter != null) {
+        String statusFilter = cbStatusFilter.getValue();
+        String dateFilter = tfDateFilter.getText().trim();
+        List<Appointment> result = store.getAppointments();
+
+        // Φιλτρο κατασταση
+        if (!"ΟΛΑ".equals(statusFilter) && statusFilter != null) {
             try {
-                Appointment.Status s = Appointment.Status.valueOf(filter);
-                all = all.stream().filter(a -> a.getStatus() == s).collect(Collectors.toList());
+                Appointment.Status s = Appointment.Status.valueOf(statusFilter);
+                result = result.stream().filter(a -> a.getStatus() == s).collect(Collectors.toList());
             } catch (IllegalArgumentException ignored) {}
         }
-        tableData.setAll(all);
+
+        // Φιλτρο ημερομηνιας
+        if (!dateFilter.isEmpty()) {
+            result = result.stream().filter(a -> a.getDate().equals(dateFilter)).collect(Collectors.toList());
+        }
+
+        tableData.setAll(result);
     }
 
     private void updateButtons(Appointment a) {

@@ -2,7 +2,7 @@ package com.clinicms.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Auto-incrementing ID generator per entity type.
+/** Αυτοματη δημιουργια μοναδικων IDs ανα τυπο οντοτητας (thread-safe). */
 public final class IdGenerator {
 
     private static final AtomicInteger doctorCounter = new AtomicInteger(0);

@@ -2,6 +2,10 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
+/**
+ * Αναπαρασταση ραντεβου – συνδεει ασθενη με ιατρο σε συγκεκριμενη ημερομηνια/ωρα.
+ * Κυκλος ζωης: SCHEDULED → COMPLETED η CANCELLED.
+ */
 public class Appointment {
 
     public enum Status { SCHEDULED, COMPLETED, CANCELLED }

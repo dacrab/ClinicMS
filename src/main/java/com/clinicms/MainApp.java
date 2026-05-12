@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/** Σημειο εκκινησης της JavaFX εφαρμογης – φορτωνει το κυριο FXML και το stylesheet. */
 public class MainApp extends Application {
 
     @Override

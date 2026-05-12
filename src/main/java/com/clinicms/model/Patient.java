@@ -2,6 +2,7 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
+/** Αναπαρασταση ασθενη με προσωπικα στοιχεια και ιατρικο ιστορικο. */
 public class Patient {
 
     private int id;

@@ -12,7 +12,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Singleton data store – in-memory collections persisted to CSV on every write.
+/**
+ * Singleton data store (DAO pattern).
+ * Διατηρει ολες τις οντοτητες στη μνημη και τις αποθηκευει σε CSV
+ * αρχεια μετα απο καθε εγγραφη. Εξασφαλιζει αποτροπη διπλοκρατησεων.
+ */
 public class DataStore {
 
     private static DataStore instance;

@@ -7,6 +7,7 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 
+/** Controller πλοηγησης – φορτωνει τα sub-views (Ιατροι, Ασθενεις, Ραντεβου). */
 public class MainController {
 
     @FXML private StackPane contentArea;

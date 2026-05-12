@@ -2,6 +2,10 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
+/**
+ * Εξειδικευμενος ιατρος – επεκτεινει τον {@link Doctor}
+ * με υπο-ειδικοτητα και μεγιστο εβδομαδιαιο αριθμο ασθενων.
+ */
 public class Specialist extends Doctor {
 
     private String subSpecialty;

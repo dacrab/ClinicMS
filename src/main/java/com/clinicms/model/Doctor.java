@@ -2,6 +2,10 @@ package com.clinicms.model;
 
 import com.clinicms.util.CsvUtil;
 
+/**
+ * Αναπαρασταση ιατρου στο συστημα.
+ * Βασικη κλαση – η {@link Specialist} κληρονομει για εξειδικευμενους ιατρους.
+ */
 public class Doctor {
 
     private int id;

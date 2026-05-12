@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+/** Controller για CRUD λειτουργιες ιατρων με αναζητηση σε πραγματικο χρονο. */
 public class DoctorController {
 
     @FXML private TableView<Doctor> doctorTable;
